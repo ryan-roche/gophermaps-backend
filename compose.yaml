@@ -5,4 +5,6 @@ services:
     image:  "nginx"    # use the nginx image from docker hub
     volumes:
       - ./web-content:/web-content
+  db:
+    image:  "neo4j"
 
