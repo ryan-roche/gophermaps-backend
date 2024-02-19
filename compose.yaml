@@ -1,10 +1,13 @@
 services:
-  web:                # nginx web server
+  web:                  # nginx web server
     ports:
-      - "8080:80"   # exposes the web server ports
-    image:  "nginx"    # use the nginx image from docker hub
+      - "8080:80"       # web server port
+    image:  "nginx"     # use the nginx image from docker hub
     volumes:
       - ./web-content:/web-content
-  db:
-    image:  "neo4j"
-
+  db:                   # neo4j graph database
+    image:  "neo4j"     # use the neo4j image from docker hub
+    ports:
+      - "7474:7474"     # HTTP
+      - "7473:7473"     # HTTPS
+      - "7687:7687"     # Bolt
