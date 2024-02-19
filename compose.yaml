@@ -2,4 +2,7 @@ services:
   web:                # nginx web server
     ports:
       - "8080:80"   # exposes the web server ports
-    image: "nginx"    # use the nginx image from docker hub
+    image:  "nginx"    # use the nginx image from docker hub
+    volumes:
+      - ./web-content:/web-content
+
