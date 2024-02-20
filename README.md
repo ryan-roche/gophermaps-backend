@@ -1,6 +1,7 @@
 # gophermaps-backend
+
 Backend for gophermaps
 
-# [Neo4j documentation](https://neo4j.com/docs/)
+## [Neo4j Documentation](https://neo4j.com/docs/)
 
-# [Apache HTTP Server Documentation](https://httpd.apache.org/docs/2.4/)
+## [NGINX Documentation](https://nginx.org/en/docs/beginners_guide.html)
