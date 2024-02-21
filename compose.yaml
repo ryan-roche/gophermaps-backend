@@ -1,3 +1,4 @@
+# TODO add bind mounts for relevant directories
 services:
   web:                  # nginx web server
     ports:
