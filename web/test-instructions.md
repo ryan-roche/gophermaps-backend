@@ -19,3 +19,6 @@ There should be a divider line above this text.
 
 Test image embed:
 ![bulborb-test-image](img/instruction-test-1.png)
+
+Second test image:
+![teala-test-image](img/instruction-test-2.png)
