@@ -3,7 +3,7 @@ services:
   web:                  # nginx web server
     ports:
       - "8080:80"       # web server port
-    image:  "nginx"     # use the nginx image from docker hub
+    image:  "unit"     # use the nginx image from docker hub
     volumes:
       - ./web-content:/web-content
   db:                   # neo4j graph database
