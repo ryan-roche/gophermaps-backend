@@ -1,9 +1,8 @@
-# TODO add bind mounts for relevant directories
 services:
   webapp:               # nginx unit
+    build: .
     ports:
       - "8080:8000"     # web server port
-    image:  "unit"      # use the nginx image from docker hub
     volumes:
       - ./config:/docker-entrypoint.d
       - ./web:/web:ro
