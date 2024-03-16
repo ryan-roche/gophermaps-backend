@@ -1,0 +1,11 @@
+{
+  "listeners": {
+    "*:8000": {
+      "pass": "routes"
+    }
+  },
+  "routes": [
+    {"action": {"return":  200}}
+  ],
+  "applications": {}
+}

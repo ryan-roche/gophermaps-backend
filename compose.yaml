@@ -1,14 +1,18 @@
 # TODO add bind mounts for relevant directories
 services:
-  web:                  # nginx web server
+  webapp:               # nginx unit
     ports:
-      - "8080:80"       # web server port
-    image:  "unit"     # use the nginx image from docker hub
+      - "8080:8000"     # web server port
+    image:  "unit"      # use the nginx image from docker hub
     volumes:
-      - ./web-content:/web-content
+      - ./config:/docker-entrypoint.d
+      - ./web:/web:ro
+      - ./service:/service:ro
   db:                   # neo4j graph database
     image:  "neo4j"     # use the neo4j image from docker hub
     ports:
+      # These ports are only exposed to the host machine for testing purposes.
+      # For production, they should only be exposed internally to the other services
       - "7474:7474"     # HTTP
       - "7473:7473"     # HTTPS
       - "7687:7687"     # Bolt
