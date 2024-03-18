@@ -1,9 +1,43 @@
 {
   "listeners": {
     "*:8000": {
-      "pass": "applications/fastapi"
+      "pass": "routes"
     }
   },
+
+  "routes": [
+    {
+      "match": {
+        "method": "!GET"
+      },
+      "action": {
+        "return": 501
+      }
+    },
+    {
+      "match": {
+        "uri": [
+          "/instructions/*",
+          "/thumbnails/*"
+        ]
+      },
+      "action": {
+        "share": "/web/$uri"
+      }
+    },
+    {
+      "match": {
+        "uri": [
+          "/buildings/*",
+          "/routes/*",
+          "/destinations/*"
+        ]
+      },
+      "action": {
+        "pass": "applications/fastapi"
+      }
+    }
+  ],
 
   "applications": {
     "fastapi": {

@@ -18,7 +18,7 @@ There should be a divider line above this text.
 *this text is italicized*
 
 Test image embed:
-![bulborb-test-image](img/instruction-test-1.png)
+![bulborb-test-image](/img1.png)
 
 Second test image:
-![teala-test-image](img/instruction-test-2.png)
+![teala-test-image](/img2.png)
