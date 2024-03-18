@@ -16,3 +16,11 @@ services:
       - "7474:7474"     # HTTP
       - "7473:7473"     # HTTPS
       - "7687:7687"     # Bolt
+    volumes:
+      - ./db/conf:/conf
+      - ./db/data:/data
+      - ./db/import:/import
+      - ./db/licenses:/licenses
+      - ./db/logs:/logs
+      - ./db/plugins:/plugins
+      - ./db/ssl:/ssl
