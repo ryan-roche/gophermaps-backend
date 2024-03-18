@@ -34,14 +34,8 @@
         "share": "/web/$uri"
       }
     },
+
     {
-      "match": {
-        "uri": [
-          "/buildings/*",
-          "/routes/*",
-          "/destinations/*"
-        ]
-      },
       "action": {
         "pass": "applications/fastapi"
       }
