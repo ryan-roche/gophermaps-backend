@@ -19,7 +19,7 @@ async def get_areas():
 @app.get("/buildings/{area}")
 async def get_buildings_by_area(area):
     # TODO query neo4j database for buildings with area tag
-    return {"message": f"Buildings for {area}"}
+    return ["Test 1", "Test 2", "Test 3"]
 
 
 @app.get("/destinations/{building}")
