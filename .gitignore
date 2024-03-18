@@ -215,4 +215,4 @@ cython_debug/
 #.idea/
 
 # Neo4j database data
-/db/data/
+db/
