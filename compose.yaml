@@ -1,6 +1,7 @@
 services:
   webapp:               # nginx unit
-    build: .
+    build:
+      dockerfile: webapp.Dockerfile
     ports:
       - "8080:8000"     # web server port
     volumes:
