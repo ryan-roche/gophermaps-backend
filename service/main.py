@@ -3,10 +3,18 @@ from pydantic import BaseModel
 
 app = FastAPI(docs_url="/docs")
 
+
 class BuildingEntryModel(BaseModel):
     area: str
     name: str
     thumb: str
+
+
+@app.get("/areas")
+async def get_areas():
+    areas = ["TestBuildings"]
+    return areas
+
 
 @app.get("/buildings/{area}")
 async def get_buildings_by_area(area):
