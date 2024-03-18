@@ -1,12 +1,12 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(docs_url="/docs")
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
+class BuildingEntryModel(BaseModel):
+    area: str
+    name: str
+    thumb: str
 
 @app.get("/buildings/{area}")
 async def get_buildings_by_area(area):
