@@ -8,6 +8,15 @@
   "routes": [
     {
       "match": {
+        "method": "HEAD"
+      },
+      "action": {
+        "return": 200
+      }
+    },
+
+    {
+      "match": {
         "method": "!GET"
       },
       "action": {

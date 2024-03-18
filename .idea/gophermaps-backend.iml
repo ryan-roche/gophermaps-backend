@@ -3,6 +3,13 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/db/conf" />
+      <excludeFolder url="file://$MODULE_DIR$/db/data/databases/neo4j/schema/index/range-1.0" />
+      <excludeFolder url="file://$MODULE_DIR$/db/import" />
+      <excludeFolder url="file://$MODULE_DIR$/db/licenses" />
+      <excludeFolder url="file://$MODULE_DIR$/db/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/db/plugins" />
+      <excludeFolder url="file://$MODULE_DIR$/db/ssl" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (gophermaps-backend)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
