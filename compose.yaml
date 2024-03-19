@@ -8,6 +8,10 @@ services:
       - ./config:/docker-entrypoint.d
       - ./web:/web:ro
       - ./service:/service:ro
+    depends_on:
+      db:
+        condition:
+          service_healthy
   db:                   # neo4j graph database
     image:  "neo4j"     # use the neo4j image from docker hub
     ports:
@@ -24,3 +28,9 @@ services:
       - ./db/logs:/logs
       - ./db/plugins:/plugins
       - ./db/ssl:/ssl
+    healthcheck:
+      test: wget http://localhost:7474 || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
