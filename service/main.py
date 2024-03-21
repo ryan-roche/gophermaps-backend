@@ -34,7 +34,7 @@ async def get_areas():
 @app.get("/buildings/{area}")
 async def get_buildings_by_area(area, response_model=BuildingEntryModel):
     records =  driver.execute_query(
-        f"MATCH (n:{str(area)}) RETURN n",
+        f"MATCH (n:{str(area)}:BuildingKey) RETURN n",
     ).records
 
     return [record[0] for record in records]
