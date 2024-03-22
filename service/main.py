@@ -26,8 +26,10 @@ class BuildingEntryModel(BaseModel):
 # TODO: Cache areas query after first run since it won't be changing
 async def get_areas():
     records = driver.execute_query(
-        'MATCH(n) UNWIND labels(n) AS label WITH DISTINCT label WHERE label '
-                                                  '<> ["Building" | "BuildingKey"] RETURN label'
+        """
+        MATCH (n) WHERE NOT (n:Building OR n:BuildingLabel)
+        RETURN DISTINCT labels(n) AS LABELS
+        """
     ).records
 
     return [record[0] for record in records]
