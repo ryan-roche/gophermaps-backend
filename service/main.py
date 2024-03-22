@@ -25,10 +25,12 @@ class BuildingEntryModel(BaseModel):
 @app.get("/areas")
 # TODO: Cache areas query after first run since it won't be changing
 async def get_areas():
-    return driver.execute_query(
+    records = driver.execute_query(
         'MATCH(n) UNWIND labels(n) AS label WITH DISTINCT label WHERE label '
                                                   '<> "Building" RETURN label'
     ).records
+
+    return [record[0] for record in records]
 
 
 @app.get("/buildings/{area}")
