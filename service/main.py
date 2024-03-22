@@ -28,7 +28,7 @@ async def get_areas():
     return driver.execute_query(
         'MATCH(n) UNWIND labels(n) AS label WITH DISTINCT label WHERE label '
                                                   '<> "Building" RETURN label'
-    ).records[0]
+    ).records
 
 
 @app.get("/buildings/{area}")
