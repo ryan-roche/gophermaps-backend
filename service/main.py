@@ -27,7 +27,7 @@ class BuildingEntryModel(BaseModel):
 async def get_areas():
     records = driver.execute_query(
         'MATCH(n) UNWIND labels(n) AS label WITH DISTINCT label WHERE label '
-                                                  '<> "Building" RETURN label'
+                                                  '<> ["Building" | "BuildingKey"] RETURN label'
     ).records
 
     return [record[0] for record in records]
