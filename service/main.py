@@ -4,7 +4,7 @@ from neo4j import GraphDatabase
 from dotenv import load_dotenv
 from enum import Enum
 import os
-import string
+
 
 if not load_dotenv(dotenv_path="/docker-entrypoint.d/.env"):
     raise Exception("Could not load .env file")
@@ -42,12 +42,10 @@ app = FastAPI(docs_url="/docs")
 
 
 @app.get("/areas", tags=["Buildings"])
-# TODO: Cache areas query after first run since it won't be changing
 async def get_areas() -> list[str]:
     """
     Get all available area labels
     """
-    # TODO: Add parameter and response descriptions
     records = driver.execute_query(
         """MATCH (n)
         UNWIND labels(n) AS label
@@ -60,11 +58,12 @@ async def get_areas() -> list[str]:
 
 
 @app.get("/buildings/{area}", tags=["Buildings"])
-async def get_buildings_by_area(area: AreaName) -> list[BuildingEntryModel]:
+async def get_buildings_by_area(
+        area: AreaName = Path(..., description="The label name of the requested area")
+) -> list[BuildingEntryModel]:
     """
     Get all the areas in a given area
     """
-    # TODO: Add parameter and response descriptions
     records = driver.execute_query(
         f"MATCH (n:{str(area)}:BuildingKey) RETURN n",
     ).records
@@ -73,7 +72,9 @@ async def get_buildings_by_area(area: AreaName) -> list[BuildingEntryModel]:
 
 
 @app.get("/destinations/{building_id}", tags=["Routing"])
-async def get_destinations_for_building(building_id: str = Path(..., description="The navID of the building whose destinations are being requested")):
+async def get_destinations_for_building(
+        building_id: str = Path(..., description="The navID of the building whose destinations are being requested")
+):
     """
     Get the destinations reachable from a given building
     """
@@ -91,15 +92,13 @@ async def get_destinations_for_building(building_id: str = Path(..., description
 
 
 @app.get("/routes/{start}-{end}", tags=["Routing"])
-async def get_route(start: str, end: str) -> list[NavigationNodeModel]:
+async def get_route(
+        start: str = Path(..., description="The navID of the start building's BuildingKey node"),
+        end: str = Path(..., description="The navID of the end building's BuildingKey node")
+) -> list[NavigationNodeModel]:
     """
     Get a route between two buildings
-    @param start: The navID of the BuildingKey node for the starting building
-    @param end: The navID of the BuildingKey node for the destination building
-    @return: An ordered list of the nodes that must be traversed to get from start to end. The navIDs of these nodes can
-    be used to get the corresponding instruction files for moving between those nodes.
     """
-    # TODO: Add parameter and response descriptions
     records = driver.execute_query(
         """
         MATCH (startNode {navID: $start}), (endNode {navID: $end}), path = shortestPath((startNode)-[*]-(endNode))
