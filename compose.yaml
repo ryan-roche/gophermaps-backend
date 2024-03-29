@@ -3,7 +3,11 @@ services:
     build:
       dockerfile: webapp.Dockerfile
     ports:
-      - "8080:8000"     # web server port
+      - "8080:8000"     # development port
+      - "8081:8001"     # backup development port
+      - "443:443"       # https port
+      - "8443:8443"     # secondary https port
+
     volumes:
       - ./config:/docker-entrypoint.d
       - ./web:/web:ro
