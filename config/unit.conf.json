@@ -9,13 +9,17 @@
     },
 
     "*:443": {
-      "ssl" : {},
-      "pass": "routes"
+      "pass": "routes",
+      "tls": {
+        "certificate": "bundle"
+      }
     },
     
     "*:8443": {
-      "ssl" : {},
-      "pass": "routes"
+      "pass": "routes",
+      "tls": {
+        "certificate": "bundle"
+      }
     }
   },
 
