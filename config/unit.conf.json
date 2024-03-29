@@ -2,6 +2,12 @@
   "listeners": {
     "*:8000": {
       "pass": "routes"
+    },
+    "*:443": {
+      "pass": "routes"
+    },
+    "*:8443": {
+      "pass": "routes"
     }
   },
 
