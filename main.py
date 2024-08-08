@@ -1,16 +1,11 @@
 from fastapi import FastAPI, Path
 from pydantic import BaseModel, Field
 from neo4j import GraphDatabase
-from dotenv import load_dotenv
 from enum import Enum
-import os
 
 
-if not load_dotenv(dotenv_path="/docker-entrypoint.d/.env"):
-    raise Exception("Could not load .env file")
-
-URI = "bolt://db:7687"
-AUTH = ("neo4j", os.getenv("NEO4J_PASSWORD"))
+URI = "neo4j+s://3be5622e.databases.neo4j.io"
+AUTH = ("neo4j", "Cd5eIf6EXhO645obqSAGv4Dd4WitBuKo3UW1_E_GMuI") # TODO REMOVE FROM CODE
 
 driver = GraphDatabase.driver(URI, auth=AUTH)
 driver.verify_connectivity()

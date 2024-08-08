@@ -1,5 +1,5 @@
 > [!NOTE]
-> Currently in the process of migrating to Azure in preparation for the 2024 Fall Semester
+> Currently in the process of migrating to Cloud hosting in preparation for the 2024 Fall Semester
 
 # gophermaps-backend
 
