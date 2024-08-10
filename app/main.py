@@ -3,12 +3,13 @@ from fastapi import FastAPI, Path
 from pydantic import BaseModel, Field
 from neo4j import GraphDatabase
 from enum import Enum
+from os import getenv
 
 
 # TODO: Replace with secrets
-AURA_CONNECTION_URI = "neo4j+ssc://3be5622e.databases.neo4j.io"
-AURA_USERNAME = "neo4j"
-AURA_PASSWORD = "Cd5eIf6EXhO645obqSAGv4Dd4WitBuKo3UW1_E_GMuI"
+AURA_CONNECTION_URI = getenv("AURA_URI")
+AURA_USERNAME = getenv("AURA_USERNAME")
+AURA_PASSWORD = getenv("AURA_PASSWORD")
 
 # Driver object declaration
 driver = GraphDatabase.driver(
