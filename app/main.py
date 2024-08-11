@@ -1,6 +1,5 @@
 from typing import List, Dict, Any
 from fastapi import FastAPI, Path
-from fastapi.openapi.models import Server
 from pydantic import BaseModel, Field
 from neo4j import GraphDatabase
 from enum import Enum
