@@ -59,7 +59,7 @@ async def shutdown():
     driver.close()
 
 
-@app.get("/areas", tags=["Buildings"])
+@app.get("/areas", tags=["Buildings"], operation_id="getAreas")
 async def get_areas() -> list[str]:
     """
     Get all available area labels
@@ -76,7 +76,7 @@ async def get_areas() -> list[str]:
         return [record[0] for record in records]
 
 
-@app.get("/buildings/{area}", tags=["Buildings"])
+@app.get("/buildings/{area}", tags=["Buildings"], operation_id="getBuildingsForArea")
 async def get_buildings_by_area(
         area: AreaName = Path(..., description="The label name of the requested area")
 ) -> List[BuildingEntryModel]:
@@ -98,7 +98,7 @@ async def get_buildings_by_area(
         return building_entries
 
 
-@app.get("/destinations/{building}", tags=["Routing"])
+@app.get("/destinations/{building}", tags=["Routing"], operation_id="getDestinationsForBuilding")
 async def get_destinations_for_building(
         building: str = Path(..., description="The name of the building whose destinations are being queried")
 ) -> List[BuildingEntryModel]:
@@ -126,7 +126,7 @@ async def get_destinations_for_building(
         return destination_buildings
 
 
-@app.get("/routes/{start}-{end}", tags=["Routing"])
+@app.get("/routes/{start}-{end}", tags=["Routing"], operation_id="getRoute")
 async def get_route(
         start: str = Path(..., description="The navID of the start building's BuildingKey node"),
         end: str = Path(..., description="The navID of the end building's BuildingKey node")
