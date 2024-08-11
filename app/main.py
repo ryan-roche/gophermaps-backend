@@ -1,12 +1,12 @@
 from typing import List, Dict, Any
 from fastapi import FastAPI, Path
+from fastapi.openapi.models import Server
 from pydantic import BaseModel, Field
 from neo4j import GraphDatabase
 from enum import Enum
 from os import getenv
 
 
-# TODO: Replace with secrets
 AURA_CONNECTION_URI = getenv("AURA_URI")
 AURA_USERNAME = getenv("AURA_USERNAME")
 AURA_PASSWORD = getenv("AURA_PASSWORD")
@@ -40,7 +40,9 @@ class AreaName(str, Enum):
     east_bank = 'EastBank'
 
 
-app = FastAPI(docs_url="/docs")
+server1 = Server(url="https://api.gophermaps.xyz", description="Main API Server")
+
+app = FastAPI(docs_url="/docs", servers=[server1])
 
 
 @app.on_event("startup")
