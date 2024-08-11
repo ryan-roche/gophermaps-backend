@@ -39,7 +39,13 @@ class AreaName(str, Enum):
     east_bank = 'EastBank'
 
 
-app = FastAPI(docs_url="/docs")
+app = FastAPI(
+    docs_url="/docs",
+    servers=[{
+        "url": "https://api.gophermaps.xyz",
+        "description": "The production API server."
+    }]
+)
 
 
 @app.on_event("startup")
