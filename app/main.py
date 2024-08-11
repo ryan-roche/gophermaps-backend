@@ -60,7 +60,7 @@ async def shutdown():
 
 
 @app.get("/areas", tags=["Buildings"], operation_id="getAreas")
-async def get_areas() -> list[str]:
+async def get_areas() -> list[AreaName]:
     """
     Get all available area labels
     """
