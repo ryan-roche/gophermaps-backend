@@ -50,6 +50,12 @@ class NavigationNodeModel(BaseModel):
     navID: str = Field(..., description="The navID of the Neo4j node the model represents")
 
 
+areas = [
+    AreaModel(name=AreaName.test_buildings.value, thumbnail="test_buildings.png"),
+    AreaModel(name=AreaName.east_bank.value, thumbnail="east_bank.jpg"),
+]
+
+
 app = FastAPI(
     docs_url="/docs",
     servers=[{
@@ -71,20 +77,11 @@ async def shutdown():
 
 
 @app.get("/areas", tags=["Buildings"], operation_id="getAreas")
-async def get_areas() -> list[AreaName]:
+async def get_areas() -> list[AreaModel]:
     """
-    Get all available area labels
+    Get all available areas
     """
-    with driver.session() as session:
-        records = session.run(
-            """MATCH (n)
-            UNWIND labels(n) AS label
-            WITH DISTINCT label
-            WHERE NOT label IN ["Building", "BuildingKey"]
-            RETURN label"""
-        )
-
-        return [record[0] for record in records]
+    return areas
 
 
 @app.get("/buildings/{area}", tags=["Buildings"], operation_id="getBuildingsForArea")
