@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from fastapi import FastAPI, Path
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from pydantic import BaseModel, Field
 from neo4j import GraphDatabase
 from enum import Enum
@@ -58,6 +59,15 @@ areas = [
 ]
 
 app = FastAPI(
+    title="GopherMaps API",
+    summary="REST API for the GopherMaps Project",
+    version="0.0.1",
+    contact={
+        "name": "Ryan Roche",
+        "url": "https://socialcoding.net"
+    },
+    docs_url=None,
+    redoc_url=None,
     servers=[{
         "url": "https://api.gophermaps.xyz",
         "description": "The production API server."
@@ -77,6 +87,24 @@ async def shutdown():
     # Close the Neo4j driver connection
     driver.close()
 
+
+###
+# Documentation pages
+@app.get("/docs", include_in_schema=False)
+async def swagger_override():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="GopherMaps API Docs",
+        swagger_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
+    )
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_override():
+    return get_redoc_html(
+        openapi_url="/openapi.json",
+        title="GopherMaps API Docs",
+        redoc_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
+    )
 
 ###
 # API Endpoints
