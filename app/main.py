@@ -5,18 +5,18 @@ from neo4j import GraphDatabase
 from enum import Enum
 from os import getenv
 
-
 AURA_CONNECTION_URI = getenv("AURA_URI")
 AURA_USERNAME = getenv("AURA_USERNAME")
 AURA_PASSWORD = getenv("AURA_PASSWORD")
 
-# Driver object declaration
 driver = GraphDatabase.driver(
     AURA_CONNECTION_URI,
     auth=(AURA_USERNAME, AURA_PASSWORD)
 )
 
 
+###
+# Schema Models
 class AreaName(str, Enum):
     """
     Valid AreaModel name strings
@@ -50,14 +50,14 @@ class NavigationNodeModel(BaseModel):
     navID: str = Field(..., description="The navID of the Neo4j node the model represents")
 
 
+###
+# Server initialization
 areas = [
     AreaModel(name=AreaName.test_buildings.value, thumbnail="test_buildings.png"),
     AreaModel(name=AreaName.east_bank.value, thumbnail="east_bank.jpg"),
 ]
 
-
 app = FastAPI(
-    docs_url="/docs",
     servers=[{
         "url": "https://api.gophermaps.xyz",
         "description": "The production API server."
@@ -65,6 +65,8 @@ app = FastAPI(
 )
 
 
+###
+# Startup/Shutdown Logic
 @app.on_event("startup")
 async def startup():
     driver.verify_authentication()
@@ -76,6 +78,8 @@ async def shutdown():
     driver.close()
 
 
+###
+# API Endpoints
 @app.get("/areas", tags=["Buildings"], operation_id="getAreas")
 async def get_areas() -> list[AreaModel]:
     """
