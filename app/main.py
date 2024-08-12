@@ -179,7 +179,7 @@ async def get_destinations_for_building(
 async def get_route(
         start: str = Path(..., description="The navID of the start building's BuildingKey node"),
         end: str = Path(..., description="The navID of the end building's BuildingKey node")
-):
+) -> List[NavigationNodeModel]:
     """
     Get a route between two buildings
     """
