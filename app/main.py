@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from fastapi import FastAPI, Path
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from neo4j import GraphDatabase
 from enum import Enum
 from os import getenv
@@ -47,8 +47,17 @@ class NavigationNodeModel(BaseModel):
     """
     Represents a single "step" of a navigation route
     """
-    name: str = Field(..., description="The name of the building the node belongs to")
+    buildingName: str = Field(..., description="The name of the building the node belongs to")
+    floor: str = Field(..., description="The floor in the building this navigation node is in")
     navID: str = Field(..., description="The navID of the Neo4j node the model represents")
+
+    # Neo4j returns ints for numeric floors, validator converts those to strings
+    @validator('floor', pre=True)
+    def validate_floor(cls, v):
+        if isinstance(v, int):
+            return str(v)
+        else:
+            return v
 
 
 ###
@@ -170,18 +179,21 @@ async def get_destinations_for_building(
 async def get_route(
         start: str = Path(..., description="The navID of the start building's BuildingKey node"),
         end: str = Path(..., description="The navID of the end building's BuildingKey node")
-) -> list[NavigationNodeModel]:
+):
     """
     Get a route between two buildings
     """
     with driver.session() as session:
-        records = session.run(
-            """
+        query = """
             MATCH (startNode {navID: $start}), (endNode {navID: $end}), path = shortestPath((startNode)-[*]-(endNode))
             RETURN nodes(path)
-            """,
-            start=start,
-            end=end
-        )
+            """
+        parameters = {'start': start, 'end': end}
+        result = session.run(query, parameters)
 
-    return records[0][0]
+        body: List[Dict[str, Any]] = result.data()
+        nodes = body[0]['nodes(path)']
+
+        route = [NavigationNodeModel(**node) for node in nodes]
+
+        return route
