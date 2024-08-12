@@ -17,6 +17,22 @@ driver = GraphDatabase.driver(
 )
 
 
+class AreaName(str, Enum):
+    """
+    Valid AreaModel name strings
+    """
+    test_buildings = 'TestBuildings'
+    east_bank = 'EastBank'
+
+
+class AreaModel(BaseModel):
+    """
+    Represents an area
+    """
+    name: AreaName = Field(..., description="The name of the area")
+    thumbnail: str = Field(..., description="The filename of the area's thumbnail image")
+
+
 class BuildingEntryModel(BaseModel):
     """
     Represents an entire building
@@ -32,11 +48,6 @@ class NavigationNodeModel(BaseModel):
     """
     name: str = Field(..., description="The name of the building the node belongs to")
     navID: str = Field(..., description="The navID of the Neo4j node the model represents")
-
-
-class AreaName(str, Enum):
-    test_buildings = 'TestBuildings'
-    east_bank = 'EastBank'
 
 
 app = FastAPI(
