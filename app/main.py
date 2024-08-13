@@ -22,8 +22,8 @@ class AreaName(str, Enum):
     """
     Valid AreaModel name strings
     """
-    test_buildings = 'TestBuildings'
-    east_bank = 'EastBank'
+    test_buildings = 'Test Buildings'
+    east_bank = 'East Bank'
 
 
 class AreaModel(BaseModel):
@@ -133,9 +133,11 @@ async def get_buildings_by_area(
     Get all the buildings in a given area
     """
     with driver.session() as session:
-        result = session.run(
-            f"MATCH (n:{area.value}:BuildingKey) RETURN n",
-        )
+        query = """
+        MATCH (n:BuildingKey {area: $areaName}) RETURN n
+        """
+        parameters = {"areaName": area}
+        result = session.run(query, parameters)
 
         results: List[Dict[str, Any]] = result.data()
 
