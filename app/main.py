@@ -40,7 +40,7 @@ class BuildingEntryModel(BaseModel):
     """
     buildingName: str = Field(..., description="The name of the building")
     thumbnail: str = Field(..., description="The filename of the building's thumbnail image")
-    navID: str = Field(..., description="The navID of the building's BuildingKey node")
+    keyID: str = Field(..., description="The navID of the building's BuildingKey node")
 
 
 class NavigationNodeModel(BaseModel):
@@ -50,6 +50,7 @@ class NavigationNodeModel(BaseModel):
     buildingName: str = Field(..., description="The name of the building the node belongs to")
     floor: str = Field(..., description="The floor in the building this navigation node is in")
     navID: str = Field(..., description="The navID of the Neo4j node the model represents")
+    thumbnail: str = Field(..., description="The filename of the node's building's thumbnail image")
 
     # Neo4j returns ints for numeric floors, validator converts those to strings
     @validator('floor', pre=True)
@@ -196,6 +197,6 @@ async def get_route(
         body: List[Dict[str, Any]] = result.data()
         nodes = body[0]['nodes(path)']
 
-        route = [NavigationNodeModel(**node) for node in nodes]
+        node_list = [NavigationNodeModel(**node) for node in nodes]
 
-        return route
+        return node_list
