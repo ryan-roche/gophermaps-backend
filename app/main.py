@@ -61,6 +61,15 @@ class NavigationNodeModel(BaseModel):
             return v
 
 
+class RouteResponseModel(BaseModel):
+    """
+    Wrapper for responses to getRoute
+    """
+    pathNodes: List[NavigationNodeModel]
+    buildingThumbnails: Dict[str, str]
+
+
+
 ###
 # Server initialization
 areas = [
@@ -182,7 +191,7 @@ async def get_destinations_for_building(
 async def get_route(
         start: str = Path(..., description="The navID of the start building's BuildingKey node"),
         end: str = Path(..., description="The navID of the end building's BuildingKey node")
-) -> Dict[str, Any]:
+) -> RouteResponseModel:
     """
     Get a route between two buildings, a list of the buildings along the route, and their associated thumbnails
     """
@@ -210,7 +219,5 @@ async def get_route(
 
         building_thumbnail_map = dict(zip(building_names, thumbnails))
 
-        return {
-            "pathNodes": node_list,
-            "buildings_thumbnails": building_thumbnail_map
-        }
+        return RouteResponseModel(node_list, building_thumbnail_map)
+
