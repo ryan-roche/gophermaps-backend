@@ -50,7 +50,7 @@ class NavigationNodeModel(BaseModel):
     buildingName: str = Field(..., description="The name of the building the node belongs to")
     floor: str = Field(..., description="The floor in the building this navigation node is in")
     navID: str = Field(..., description="The navID of the Neo4j node the model represents")
-    thumbnail: str = Field(..., description="The filename of the node's building's thumbnail image")
+    image: str = Field(..., description="The reference image for the navigation node")
 
     # Neo4j returns ints for numeric floors, validator converts those to strings
     @validator('floor', pre=True)
@@ -182,21 +182,35 @@ async def get_destinations_for_building(
 async def get_route(
         start: str = Path(..., description="The navID of the start building's BuildingKey node"),
         end: str = Path(..., description="The navID of the end building's BuildingKey node")
-) -> List[NavigationNodeModel]:
+) -> Dict[str, Any]:
     """
-    Get a route between two buildings
+    Get a route between two buildings, a list of the buildings along the route, and their associated thumbnails
     """
     with driver.session() as session:
         query = """
             MATCH (startNode {navID: $start}), (endNode {navID: $end}), path = shortestPath((startNode)-[*]-(endNode))
-            RETURN nodes(path)
+            WITH nodes(path) AS pathNodes
+            UNWIND pathNodes AS node
+            WITH pathNodes, COLLECT(DISTINCT node.buildingName) AS uniqueBuildingNames
+            MATCH (buildingKey:BuildingKey)
+            WHERE buildingKey.buildingName IN uniqueBuildingNames
+            WITH pathNodes, COLLECT(buildingKey.buildingName) AS buildingNames, COLLECT(buildingKey.thumbnail) AS thumbnails
+            RETURN pathNodes, buildingNames, thumbnails
             """
         parameters = {'start': start, 'end': end}
         result = session.run(query, parameters)
 
-        body: List[Dict[str, Any]] = result.data()
-        nodes = body[0]['nodes(path)']
+        record = result.single()
 
-        node_list = [NavigationNodeModel(**node) for node in nodes]
+        path_nodes = record['pathNodes']
+        building_names = record['buildingNames']
+        thumbnails = record['thumbnails']
 
-        return node_list
+        node_list = [NavigationNodeModel(**node) for node in path_nodes]
+
+        building_thumbnail_map = dict(zip(building_names, thumbnails))
+
+        return {
+            "pathNodes": node_list,
+            "buildings_thumbnails": building_thumbnail_map
+        }
