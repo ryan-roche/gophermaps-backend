@@ -40,7 +40,7 @@ class BuildingEntryModel(BaseModel):
     """
     buildingName: str = Field(..., description="The name of the building")
     thumbnail: str = Field(..., description="The filename of the building's thumbnail image")
-    keyID: str = Field(..., description="The navID of the building's BuildingKey node", alias="navID")
+    navID: str = Field(..., description="The navID of the building's BuildingKey node", alias="keyID")
 
 
 class NavigationNodeModel(BaseModel):
