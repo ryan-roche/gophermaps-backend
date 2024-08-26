@@ -42,6 +42,9 @@ class BuildingEntryModel(BaseModel):
     thumbnail: str = Field(..., description="The filename of the building's thumbnail image")
     navID: str = Field(..., description="The navID of the building's BuildingKey node", alias="keyID")
 
+    class Config:
+        populate_by_name = True
+
 
 class NavigationNodeModel(BaseModel):
     """
@@ -67,7 +70,6 @@ class RouteResponseModel(BaseModel):
     """
     pathNodes: List[NavigationNodeModel]
     buildingThumbnails: Dict[str, str]
-
 
 
 ###
@@ -117,6 +119,7 @@ async def swagger_override():
         swagger_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
     )
 
+
 @app.get("/redoc", include_in_schema=False)
 async def redoc_override():
     return get_redoc_html(
@@ -124,6 +127,7 @@ async def redoc_override():
         title="GopherMaps API Docs",
         redoc_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
     )
+
 
 ###
 # API Endpoints
@@ -150,6 +154,8 @@ async def get_buildings_by_area(
         result = session.run(query, parameters)
 
         results: List[Dict[str, Any]] = result.data()
+
+        print(results)
 
         # Use list comprehension to unwrap nodes and create BuildingEntryModel instances
         building_entries: List[BuildingEntryModel] = [
