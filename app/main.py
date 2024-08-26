@@ -1,8 +1,8 @@
 from typing import List, Dict, Any
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Path, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from pydantic import BaseModel, Field, validator
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, graph
 from enum import Enum
 from os import getenv
 
@@ -155,8 +155,6 @@ async def get_buildings_by_area(
 
         results: List[Dict[str, Any]] = result.data()
 
-        print(results)
-
         # Use list comprehension to unwrap nodes and create BuildingEntryModel instances
         building_entries: List[BuildingEntryModel] = [
             BuildingEntryModel(**record['n']) for record in results
@@ -217,13 +215,19 @@ async def get_route(
 
         record = result.single()
 
-        path_nodes = record['pathNodes']
+        if record is None:
+            raise HTTPException(status_code=404, detail="Invalid Route")
+
+        path_nodes: List[graph.Node] = record['pathNodes']
         building_names = record['buildingNames']
         thumbnails = record['thumbnails']
 
-        node_list = [NavigationNodeModel(**node) for node in path_nodes]
+        for node in path_nodes:
+            print(node.keys())
+
+        parsed_nodes = [NavigationNodeModel(**node) for node in path_nodes]
 
         building_thumbnail_map = dict(zip(building_names, thumbnails))
 
-        return RouteResponseModel(node_list, building_thumbnail_map)
+        return RouteResponseModel(pathNodes=parsed_nodes, buildingThumbnails=building_thumbnail_map)
 
