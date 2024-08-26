@@ -15,7 +15,7 @@ COPY /app $APP_HOME/app
 
 # Install project dependencies via poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev
+RUN poetry install --only main
 
 EXPOSE 8080
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
