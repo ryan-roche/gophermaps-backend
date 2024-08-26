@@ -75,8 +75,8 @@ class RouteResponseModel(BaseModel):
 ###
 # Server initialization
 areas = [
-    AreaModel(name=AreaName.test_buildings.value, thumbnail="test_buildings.png"),
-    AreaModel(name=AreaName.east_bank.value, thumbnail="east_bank.jpg"),
+    AreaModel(name=AreaName.test_buildings.value, thumbnail="TestBuildings.jpg"),
+    AreaModel(name=AreaName.east_bank.value, thumbnail="EastBank.jpg"),
 ]
 
 app = FastAPI(
