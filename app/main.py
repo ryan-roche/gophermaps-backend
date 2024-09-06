@@ -22,7 +22,7 @@ class AreaName(str, Enum):
     """
     Valid AreaModel name strings
     """
-    test_buildings = 'Test Buildings'
+    # test_buildings = 'Test Buildings'
     east_bank = 'East Bank'
 
 
@@ -75,7 +75,7 @@ class RouteResponseModel(BaseModel):
 ###
 # Server initialization
 areas = [
-    AreaModel(name=AreaName.test_buildings.value, thumbnail="TestBuildings.jpg"),
+    # AreaModel(name=AreaName.test_buildings.value, thumbnail="TestBuildings.jpg"),
     AreaModel(name=AreaName.east_bank.value, thumbnail="EastBank.jpg"),
 ]
 
