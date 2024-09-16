@@ -23,7 +23,9 @@ class AreaName(str, Enum):
     Valid AreaModel name strings
     """
     # test_buildings = 'Test Buildings'
-    east_bank = 'East Bank'
+    east_bank = 'East Bank',
+    west_bank = 'West Bank',
+    st_paul = 'St Paul Campus'
 
 
 class AreaModel(BaseModel):
@@ -77,6 +79,8 @@ class RouteResponseModel(BaseModel):
 areas = [
     # AreaModel(name=AreaName.test_buildings.value, thumbnail="TestBuildings.jpg"),
     AreaModel(name=AreaName.east_bank.value, thumbnail="EastBank.jpg"),
+    AreaModel(name=AreaName.west_bank.value, thumbnail="WestBank.jpg"),
+    AreaModel(name=AreaName.st_paul.value, thumbnail="StPaul.jpg")
 ]
 
 app = FastAPI(
