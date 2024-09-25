@@ -72,6 +72,7 @@ class RouteResponseModel(BaseModel):
     """
     pathNodes: List[NavigationNodeModel]
     buildingThumbnails: Dict[str, str]
+    instructionsAvailable: Dict[str, bool]
 
 
 ###
@@ -93,10 +94,16 @@ app = FastAPI(
     },
     docs_url=None,
     redoc_url=None,
-    servers=[{
-        "url": "https://api.gophermaps.xyz",
-        "description": "The production API server."
-    }]
+    servers=[
+        {
+            "url": "https://api.gophermaps.xyz",
+            "description": "The production API server"
+        },
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Localhost API server for testing"
+        }
+    ]
 )
 
 
@@ -206,13 +213,13 @@ async def get_route(
     with driver.session() as session:
         query = """
             MATCH (startNode {navID: $start}), (endNode {navID: $end}), path = shortestPath((startNode)-[*]-(endNode))
-            WITH nodes(path) AS pathNodes
+            WITH nodes(path) AS pathNodes, relationships(path) AS pathEdges
             UNWIND pathNodes AS node
-            WITH pathNodes, COLLECT(DISTINCT node.buildingName) AS uniqueBuildingNames
+            WITH pathNodes, pathEdges, COLLECT(DISTINCT node.buildingName) AS uniqueBuildingNames
             MATCH (buildingKey:BuildingKey)
             WHERE buildingKey.buildingName IN uniqueBuildingNames
-            WITH pathNodes, COLLECT(buildingKey.buildingName) AS buildingNames, COLLECT(buildingKey.thumbnail) AS thumbnails
-            RETURN pathNodes, buildingNames, thumbnails
+            WITH pathNodes, pathEdges, COLLECT(buildingKey.buildingName) AS buildingNames, COLLECT(buildingKey.thumbnail) AS thumbnails
+            RETURN pathNodes, pathEdges, buildingNames, thumbnails
             """
         parameters = {'start': start, 'end': end}
         result = session.run(query, parameters)
@@ -223,15 +230,27 @@ async def get_route(
             raise HTTPException(status_code=404, detail="Invalid Route")
 
         path_nodes: List[graph.Node] = record['pathNodes']
+        path_edges: List[graph.Relationship] = record['pathEdges']
         building_names = record['buildingNames']
         thumbnails = record['thumbnails']
 
-        for node in path_nodes:
-            print(node.keys())
-
+        # Create the pathNodes list
         parsed_nodes = [NavigationNodeModel(**node) for node in path_nodes]
 
+        # Create the buildingThumbnails dictionary
         building_thumbnail_map = dict(zip(building_names, thumbnails))
 
-        return RouteResponseModel(pathNodes=parsed_nodes, buildingThumbnails=building_thumbnail_map)
+        # Create the instructionsAvailable dictionary
+        instructions_available = {}
+        for i in range(len(path_edges)):
+            start_node = path_nodes[i]
+            end_node = path_nodes[i + 1]
+            edge = path_edges[i]
+            start_id = start_node['navID']
+            end_id = end_node['navID']
+            edge_key = f"{start_id}-{end_id}"
+            instructions_available[edge_key] = edge['hasDetailedInstructions']
+
+        return RouteResponseModel(pathNodes=parsed_nodes, buildingThumbnails=building_thumbnail_map,
+                                  instructionsAvailable=instructions_available)
 
