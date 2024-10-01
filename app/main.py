@@ -139,9 +139,11 @@ async def redoc_override():
         redoc_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
     )
 
-@app.get("/version", include_in_schema=False)
+
+@app.get("/version")
 async def get_version() -> str:
     return app.version
+
 
 ###
 # API Endpoints
