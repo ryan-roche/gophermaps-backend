@@ -87,7 +87,7 @@ areas = [
 app = FastAPI(
     title="GopherMaps API",
     summary="REST API for the GopherMaps Project",
-    version="0.0.1",
+    version="0.0.2",
     contact={
         "name": "Ryan Roche",
         "url": "https://socialcoding.net"
@@ -139,6 +139,9 @@ async def redoc_override():
         redoc_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
     )
 
+@app.get("/version", include_in_schema=False)
+async def get_version() -> str:
+    return app.version
 
 ###
 # API Endpoints
