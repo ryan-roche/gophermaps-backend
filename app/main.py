@@ -140,7 +140,7 @@ async def redoc_override():
     )
 
 
-@app.get("/version")
+@app.get("/version", operation_id="apiVersion")
 async def get_version() -> str:
     return app.version
 
