@@ -114,7 +114,18 @@ app = FastAPI(
 # Startup/Shutdown Logic
 @app.on_event("startup")
 async def startup():
-    driver.verify_authentication()
+    try:
+        driver.verify_authentication()
+        await post_info_webhook(
+            body="REST API Endpoint successfully started",
+            source=WebhookSource.FASTAPI
+        )
+    except Exception as e:
+        await post_error_webhook(
+            title="Failed to start REST API Endpoint",
+            body=str(e),
+            source=WebhookSource.FASTAPI
+        )
 
 
 @app.on_event("shutdown")
