@@ -1,14 +1,17 @@
-from typing import List, Dict, Any
+from os import getenv
+from enum import Enum
+from typing import List, Dict, NamedTuple, Any
+from pydantic import BaseModel, Field, validator
 from fastapi import FastAPI, Path, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
-from pydantic import BaseModel, Field, validator
 from neo4j import GraphDatabase, graph
-from enum import Enum
-from os import getenv
+from discord_webhook import AsyncDiscordWebhook, DiscordEmbed
 
 AURA_CONNECTION_URI = getenv("AURA_URI")
 AURA_USERNAME = getenv("AURA_USERNAME")
 AURA_PASSWORD = getenv("AURA_PASSWORD")
+
+DISCORD_WEBHOOK_URL = getenv("DISCORD_WEBHOOK_URL")
 
 driver = GraphDatabase.driver(
     AURA_CONNECTION_URI,
@@ -118,6 +121,75 @@ async def startup():
 async def shutdown():
     # Close the Neo4j driver connection
     driver.close()
+
+
+###
+# Wrapper for webhook reports
+
+WEBHOOK_AVATAR_URL = "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/gw-backend.png?raw=true"
+
+
+class DiscordEmbedColor(Enum):
+    """
+    Semantic colors for webhook messages
+    """
+    ERROR = 0xc40000
+    INFO = 0x0085ff
+
+
+class WebhookSource(Enum):
+    """
+    What 'part' of the API produced a webhook message
+    """
+    FASTAPI = ("FastAPI", "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/fastapi.png?raw=true")
+    NEO4J = ("NEO4J", "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/neo4j.png?raw=true")
+
+
+class WebhookField(NamedTuple):
+    title: str
+    value: str
+    inline: bool
+
+
+class APICallSource(NamedTuple):
+    name: str
+    icon_url: str
+
+
+async def post_info_webhook(body: str, source: WebhookSource):
+    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps API", avatar_url=WEBHOOK_AVATAR_URL)
+
+    # Build embed
+    embed = DiscordEmbed(title="Notice", description=body, color=DiscordEmbedColor.INFO.value)
+    embed.set_author(name=source.value[0], icon_url=source.value[1])
+    embed.set_thumbnail(url="https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/info.png?raw=true")
+
+    # Send to webhook
+    webhook.add_embed(embed)
+    await webhook.execute()
+
+
+async def post_error_webhook(title: str,
+                             body: str,
+                             source: WebhookSource,
+                             fields: List[WebhookField] = None,
+                             caller: APICallSource = None):
+    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps API", avatar_url=WEBHOOK_AVATAR_URL)
+
+    # Build embed
+    embed = DiscordEmbed(title=title, description=body, color=DiscordEmbedColor.ERROR.value)
+    embed.set_author(name=source.value[0], icon_url=source.value[1])
+    embed.set_thumbnail(url="https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/error.png?raw=true")
+
+    for field in fields:
+        embed.add_embed_field(name=field.title, value=field.value, inline=field.inline)
+
+    if caller is not None:
+        embed.set_footer(text=caller.name, icon_url=caller.icon_url)
+
+    # Send to webhook
+    webhook.add_embed(embed)
+    await webhook.execute()
 
 
 ###
