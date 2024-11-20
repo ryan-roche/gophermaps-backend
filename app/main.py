@@ -1,14 +1,19 @@
-from typing import List, Dict, Any
+from fastapi.responses import JSONResponse, HTMLResponse, Response
+from sys import exit
+from os import getenv
+from enum import Enum
+from typing import List, Dict, NamedTuple, Any
+from pydantic import BaseModel, Field, validator
 from fastapi import FastAPI, Path, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
-from pydantic import BaseModel, Field, validator
 from neo4j import GraphDatabase, graph
-from enum import Enum
-from os import getenv
+from discord_webhook import AsyncDiscordWebhook, DiscordEmbed
 
 AURA_CONNECTION_URI = getenv("AURA_URI")
 AURA_USERNAME = getenv("AURA_USERNAME")
 AURA_PASSWORD = getenv("AURA_PASSWORD")
+
+DISCORD_WEBHOOK_URL = getenv("DISCORD_WEBHOOK_URL")
 
 driver = GraphDatabase.driver(
     AURA_CONNECTION_URI,
@@ -109,15 +114,119 @@ app = FastAPI(
 
 ###
 # Startup/Shutdown Logic
+# TODO migrate to lifespan event handlers
 @app.on_event("startup")
 async def startup():
-    driver.verify_authentication()
+    try:
+        driver.verify_connectivity()
+        await post_info_webhook(
+            body="REST API Endpoint successfully started",
+            source=WebhookSource.FASTAPI
+        )
+    except Exception as e:
+        driver.close()
+        await post_error_webhook(
+            title="Failed to start REST API Endpoint",
+            body=str(e),
+            source=WebhookSource.FASTAPI
+        )
+        exit(1)
 
 
 @app.on_event("shutdown")
 async def shutdown():
     # Close the Neo4j driver connection
     driver.close()
+    await post_info_webhook(
+        body="REST API Endpoint shutting down",
+        source=WebhookSource.FASTAPI
+    )
+
+
+###
+# Helpers for webhook reports
+
+WEBHOOK_AVATAR_URL = "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/gw-backend.png?raw=true"
+
+
+class DiscordEmbedColor(Enum):
+    """
+    Semantic colors for webhook messages
+    """
+    ERROR = 0xc40000
+    INFO = 0x0085ff
+
+
+class WebhookSource(Enum):
+    """
+    What 'part' of the API produced a webhook message
+    """
+    FASTAPI = ("FastAPI", "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/fastapi.png?raw=true")
+    NEO4J = ("NEO4J", "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/neo4j.png?raw=true")
+
+
+class WebhookField(NamedTuple):
+    title: str
+    value: str
+    inline: bool
+
+
+class APICallSource(NamedTuple):
+    name: str
+    icon_url: str
+
+
+async def post_info_webhook(body: str, source: WebhookSource):
+    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps Backend", avatar_url=WEBHOOK_AVATAR_URL)
+
+    # Build embed
+    embed = DiscordEmbed(title="Notice", description=body, color=DiscordEmbedColor.INFO.value)
+    embed.set_author(name=source.value[0], icon_url=source.value[1])
+    embed.set_thumbnail(url="https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/info.png?raw=true")
+
+    # Send to webhook
+    webhook.add_embed(embed)
+    await webhook.execute()
+
+
+async def post_error_webhook(title: str,
+                             body: str,
+                             source: WebhookSource,
+                             fields: List[WebhookField] = None,
+                             caller: APICallSource = None):
+    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps Backend", avatar_url=WEBHOOK_AVATAR_URL)
+
+    # Build embed
+    embed = DiscordEmbed(title=title, description=body, color=DiscordEmbedColor.ERROR.value)
+    embed.set_author(name=source.value[0], icon_url=source.value[1])
+    embed.set_thumbnail(url="https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/error.png?raw=true")
+
+    if fields is not None:
+        for field in fields:
+            embed.add_embed_field(name=field.title, value=field.value, inline=field.inline)
+
+    if caller is not None:
+        embed.set_footer(text=caller.name, icon_url=caller.icon_url)
+
+    # Send to webhook
+    webhook.add_embed(embed)
+    await webhook.execute()
+
+
+@app.exception_handler(Exception)
+# TODO parse user-agent to determine caller's platform
+# TODO disambiguate between "error" tracebacks and "not-found"
+#  tracebacks, returning 404 for the latter if it doesn't break app functionality
+async def global_exception_handler(request, exc):
+    print(request.path_params)
+    await post_error_webhook(
+        title="Traceback during API call",
+        body=f'`{request.scope["route"].path.split("/{")[0]}`',
+        source=WebhookSource.FASTAPI,
+        fields=[WebhookField(title=key, value=val, inline=True) for key, val in request.path_params.items()] +
+               [WebhookField(title="Traceback", value=str(exc), inline=False)],
+    )
+    return HTMLResponse(content="An internal server error occurred", status_code=500)
 
 
 ###
@@ -186,14 +295,26 @@ async def get_destinations_for_building(
     """
     Get the destinations reachable from a given building
     """
-    query = """
-    MATCH (startNode:BuildingKey {buildingName: $building}), (reachableNode:BuildingKey)
-    WHERE (startNode)-[*]-(reachableNode)
-    RETURN reachableNode
-    """
-    parameters = {'building': building}
-
     with driver.session() as session:
+        # Verify that the building exists in the database
+        query = """
+        MATCH (n) WHERE n.buildingName = $building
+        RETURN n
+        """
+        parameters = {"building": building}
+        result = session.run(query, parameters)
+
+        results: List[Dict[str, Any]] = result.data()
+        if len(results) == 0:
+            raise Exception("Building not found")
+
+        # Query destinations for the building
+        query = """
+        MATCH (startNode:BuildingKey {buildingName: $building}), (reachableNode:BuildingKey)
+        WHERE (startNode)-[*]-(reachableNode)
+        RETURN reachableNode
+        """
+        parameters = {'building': building}
         result = session.run(query, parameters)
 
         # Assume `results` is the list of dictionaries returned by `session.run`
@@ -232,7 +353,7 @@ async def get_route(
         record = result.single()
 
         if record is None:
-            raise HTTPException(status_code=404, detail="Invalid Route")
+            raise Exception("Invalid Route")
 
         path_nodes: List[graph.Node] = record['pathNodes']
         path_edges: List[graph.Relationship] = record['pathEdges']
@@ -258,4 +379,3 @@ async def get_route(
 
         return RouteResponseModel(pathNodes=parsed_nodes, buildingThumbnails=building_thumbnail_map,
                                   instructionsAvailable=instructions_available)
-
