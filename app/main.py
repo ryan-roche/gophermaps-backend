@@ -1,3 +1,4 @@
+from sys import exit
 from os import getenv
 from enum import Enum
 from typing import List, Dict, NamedTuple, Any
@@ -112,20 +113,23 @@ app = FastAPI(
 
 ###
 # Startup/Shutdown Logic
+# TODO migrate to lifespan event handlers
 @app.on_event("startup")
 async def startup():
     try:
-        driver.verify_authentication()
+        driver.verify_connectivity()
         await post_info_webhook(
             body="REST API Endpoint successfully started",
             source=WebhookSource.FASTAPI
         )
     except Exception as e:
+        driver.close()
         await post_error_webhook(
             title="Failed to start REST API Endpoint",
             body=str(e),
             source=WebhookSource.FASTAPI
         )
+        exit(1)
 
 
 @app.on_event("shutdown")
@@ -192,8 +196,9 @@ async def post_error_webhook(title: str,
     embed.set_author(name=source.value[0], icon_url=source.value[1])
     embed.set_thumbnail(url="https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/error.png?raw=true")
 
-    for field in fields:
-        embed.add_embed_field(name=field.title, value=field.value, inline=field.inline)
+    if fields is not None:
+        for field in fields:
+            embed.add_embed_field(name=field.title, value=field.value, inline=field.inline)
 
     if caller is not None:
         embed.set_footer(text=caller.name, icon_url=caller.icon_url)
