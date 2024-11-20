@@ -1,3 +1,4 @@
+from fastapi.responses import JSONResponse, HTMLResponse, Response
 from sys import exit
 from os import getenv
 from enum import Enum
@@ -136,10 +137,14 @@ async def startup():
 async def shutdown():
     # Close the Neo4j driver connection
     driver.close()
+    await post_info_webhook(
+        body="REST API Endpoint shutting down",
+        source=WebhookSource.FASTAPI
+    )
 
 
 ###
-# Wrapper for webhook reports
+# Helpers for webhook reports
 
 WEBHOOK_AVATAR_URL = "https://github.com/ryan-roche/gophermaps-data/blob/main/webhook-icons/gw-backend.png?raw=true"
 
@@ -172,7 +177,7 @@ class APICallSource(NamedTuple):
 
 
 async def post_info_webhook(body: str, source: WebhookSource):
-    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps API", avatar_url=WEBHOOK_AVATAR_URL)
+    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps Backend", avatar_url=WEBHOOK_AVATAR_URL)
 
     # Build embed
     embed = DiscordEmbed(title="Notice", description=body, color=DiscordEmbedColor.INFO.value)
@@ -189,7 +194,7 @@ async def post_error_webhook(title: str,
                              source: WebhookSource,
                              fields: List[WebhookField] = None,
                              caller: APICallSource = None):
-    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps API", avatar_url=WEBHOOK_AVATAR_URL)
+    webhook = AsyncDiscordWebhook(url=DISCORD_WEBHOOK_URL, username="GopherMaps Backend", avatar_url=WEBHOOK_AVATAR_URL)
 
     # Build embed
     embed = DiscordEmbed(title=title, description=body, color=DiscordEmbedColor.ERROR.value)
@@ -206,6 +211,22 @@ async def post_error_webhook(title: str,
     # Send to webhook
     webhook.add_embed(embed)
     await webhook.execute()
+
+
+@app.exception_handler(Exception)
+# TODO parse user-agent to determine caller's platform
+# TODO disambiguate between "error" tracebacks and "not-found"
+#  tracebacks, returning 404 for the latter if it doesn't break app functionality
+async def global_exception_handler(request, exc):
+    print(request.path_params)
+    await post_error_webhook(
+        title="Traceback during API call",
+        body=f'`{request.scope["route"].path.split("/{")[0]}`',
+        source=WebhookSource.FASTAPI,
+        fields=[WebhookField(title=key, value=val, inline=True) for key, val in request.path_params.items()] +
+               [WebhookField(title="Traceback", value=str(exc), inline=False)],
+    )
+    return HTMLResponse(content="An internal server error occurred", status_code=500)
 
 
 ###
@@ -274,14 +295,26 @@ async def get_destinations_for_building(
     """
     Get the destinations reachable from a given building
     """
-    query = """
-    MATCH (startNode:BuildingKey {buildingName: $building}), (reachableNode:BuildingKey)
-    WHERE (startNode)-[*]-(reachableNode)
-    RETURN reachableNode
-    """
-    parameters = {'building': building}
-
     with driver.session() as session:
+        # Verify that the building exists in the database
+        query = """
+        MATCH (n) WHERE n.buildingName = $building
+        RETURN n
+        """
+        parameters = {"building": building}
+        result = session.run(query, parameters)
+
+        results: List[Dict[str, Any]] = result.data()
+        if len(results) == 0:
+            raise Exception("Building not found")
+
+        # Query destinations for the building
+        query = """
+        MATCH (startNode:BuildingKey {buildingName: $building}), (reachableNode:BuildingKey)
+        WHERE (startNode)-[*]-(reachableNode)
+        RETURN reachableNode
+        """
+        parameters = {'building': building}
         result = session.run(query, parameters)
 
         # Assume `results` is the list of dictionaries returned by `session.run`
@@ -320,7 +353,7 @@ async def get_route(
         record = result.single()
 
         if record is None:
-            raise HTTPException(status_code=404, detail="Invalid Route")
+            raise Exception("Invalid Route")
 
         path_nodes: List[graph.Node] = record['pathNodes']
         path_edges: List[graph.Relationship] = record['pathEdges']
@@ -346,4 +379,3 @@ async def get_route(
 
         return RouteResponseModel(pathNodes=parsed_nodes, buildingThumbnails=building_thumbnail_map,
                                   instructionsAvailable=instructions_available)
-
