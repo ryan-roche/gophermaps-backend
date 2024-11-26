@@ -28,7 +28,12 @@ name: Deploy to Amazon ECS
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/ecs.yml'
+      - 'Dockerfile'
   workflow_dispatch:
 
 env:
