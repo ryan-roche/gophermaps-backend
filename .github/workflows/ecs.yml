@@ -79,10 +79,10 @@ jobs:
       id: push-image
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REGISTRY_ALIAS: $ECR_REGISTRY_ALIAS
-        REPOSITORY: $ECR_REPOSITORY
+        REGISTRY_ALIAS: ${{ env.ECR_REGISTRY_ALIAS }}
+        REPOSITORY: ${{ env.ECR_REPOSITORY  }}
         IMAGE_TAG: ${{ github.sha }}
-      run: docker push ${REGISTRY}/${REGISTRY_ALIAS}/${REPOSITORY}:${IMAGE_TAG}
+      run: docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
         
   # deploy:
   #   name: Deploy to ECS
