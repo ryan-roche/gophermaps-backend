@@ -1,9 +1,9 @@
 FROM python:3.11-slim
 
 # Environment vars
-ENV PYTHONUNBUFFERED True
+ENV PYTHONUNBUFFERED=True
 ENV POETRY_VERSION=1.8.3
-ENV APP_HOME /root
+ENV APP_HOME=/root
 
 # Install Poetry
 RUN pip3 install "poetry==$POETRY_VERSION"
