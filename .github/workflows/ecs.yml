@@ -33,7 +33,8 @@ on:
 
 env:
   AWS_REGION: us-east-2                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: socialcoding/gophermaps           # set this to your Amazon ECR repository name
+  ECR_REGISTRY_ALIAS: h1g5i3l5
+  ECR_REPOSITORY: gophermaps           # set this to your Amazon ECR repository name
   ECS_SERVICE: Gophermaps-Backend                 # set this to your Amazon ECS service name
   ECS_CLUSTER: GopherMaps                 # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION_ARN: arn:aws:ecs:us-east-2:445567081553:task-definition/GopherMaps-Backend
@@ -45,8 +46,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy
+  build:
+    name: Build & Push
     runs-on: ubuntu-latest
     environment: production
 
@@ -63,9 +64,11 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry-type: public
 
-    - name: Build, tag, and push image to Amazon ECR
+    - name: Build and tag new container image
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -77,6 +80,16 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        
+    - name: Push image to Amazon ECR
+      id: push-image
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REGISTRY_ALIAS: $ECR_REGISTRY_ALIAS
+        REPOSITORY: $ECR_REPOSITORY
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
