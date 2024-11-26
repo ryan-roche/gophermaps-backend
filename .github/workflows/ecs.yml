@@ -82,7 +82,7 @@ jobs:
         REGISTRY_ALIAS: $ECR_REGISTRY_ALIAS
         REPOSITORY: $ECR_REPOSITORY
         IMAGE_TAG: ${{ github.sha }}
-      run: docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+      run: docker push ${REGISTRY}/${REGISTRY_ALIAS}/${REPOSITORY}:${IMAGE_TAG}
         
   # deploy:
   #   name: Deploy to ECS
