@@ -31,6 +31,8 @@ jobs:
     name: Build & Push
     environment: Production
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-image.outputs.image }}
 
     steps:
     - name: Checkout
@@ -56,7 +58,9 @@ jobs:
         REGISTRY_ALIAS: ${{ env.ECR_REGISTRY_ALIAS }}
         REPOSITORY: ${{ env.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
-      run: docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+      run: |
+        docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+        echo "image=$REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
         
     - name: Push image to Amazon ECR
       id: push-image
@@ -93,7 +97,7 @@ jobs:
       with:
         task-definition-arn: ${{ env.ECS_TASK_DEFINITION_ARN }}
         container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
+        image: ${{ needs.build-image.outputs.image }}
   
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
