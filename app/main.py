@@ -1,13 +1,13 @@
-from fastapi.responses import JSONResponse, HTMLResponse, Response
+from fastapi.responses import HTMLResponse
 from sys import exit
 from os import getenv
 from enum import Enum
 from typing import List, Dict, NamedTuple, Any
 from pydantic import BaseModel, Field, validator
-from fastapi import FastAPI, Path, HTTPException
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi import FastAPI, Path
 from neo4j import GraphDatabase, graph
 from discord_webhook import AsyncDiscordWebhook, DiscordEmbed
+from scalar_fastapi import get_scalar_api_reference
 
 AURA_CONNECTION_URI = getenv("AURA_URI")
 AURA_USERNAME = getenv("AURA_USERNAME")
@@ -92,7 +92,7 @@ areas = [
 app = FastAPI(
     title="GopherMaps API",
     summary="REST API for the GopherMaps Project",
-    version="0.0.2",
+    version="1.0.1",
     contact={
         "name": "Ryan Roche",
         "url": "https://socialcoding.net"
@@ -231,21 +231,21 @@ async def global_exception_handler(request, exc):
 
 ###
 # Documentation pages
-@app.get("/docs", include_in_schema=False)
-async def swagger_override():
-    return get_swagger_ui_html(
-        openapi_url="/openapi.json",
+@app.get("/", include_in_schema=False)
+def get_root():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
         title="GopherMaps API Docs",
-        swagger_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
+        scalar_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
     )
 
 
-@app.get("/redoc", include_in_schema=False)
-async def redoc_override():
-    return get_redoc_html(
-        openapi_url="/openapi.json",
+@app.get("/docs", include_in_schema=False)
+def get_root():
+    return get_scalar_api_reference(
+        openapi_url=app.openapi_url,
         title="GopherMaps API Docs",
-        redoc_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
+        scalar_favicon_url="https://raw.githubusercontent.com/ryan-roche/gophermaps-data/main/favicon/favicon.ico"
     )
 
 
