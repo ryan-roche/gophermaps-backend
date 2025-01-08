@@ -1,0 +1,21 @@
+version: 1.0
+
+os: linux
+
+files:
+  - source: /app
+    destination: /var/gophermaps/app
+  - source: /pyproject.toml
+    destination: /var/gophermaps/pyproject.toml
+  
+hooks:
+  ApplicationStop:
+    # TODO
+  AfterInstall:
+    # TODO
+  ApplicationStart:
+    # TODO
+  ApplicationStop:
+    # TODO
+  ValidateService:
+    # TODO
