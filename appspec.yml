@@ -10,12 +10,10 @@ files:
   
 hooks:
   ApplicationStop:
-    # TODO
+    - location: scripts/stop-server.sh
   AfterInstall:
-    # TODO
+    - location: scripts/update-packages.sh
   ApplicationStart:
-    # TODO
-  ApplicationStop:
-    # TODO
+    - location: scripts/start-server.sh
   ValidateService:
-    # TODO
+    - location: scripts/validate-service.sh
