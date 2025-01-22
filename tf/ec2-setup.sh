@@ -20,8 +20,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/var/gophermaps/app
-Environment="PATH=/var/gophermaps/app/venv/bin"
-ExecStart=/var/gophermaps/app/venv/bin/fastapi run --app main:app --host 0.0.0.0 --port 8000
+ExecStart=/usr/local/bin/poetry run fastapi run --app main:app --host 0.0.0.0 --port 8000
 
 Restart=always
 RestartSec=3
