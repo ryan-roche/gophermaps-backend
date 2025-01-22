@@ -46,19 +46,19 @@ resource "aws_route_table" "public" {
 #* Create two public subnets for the VPC with no IPv4
 resource "aws_subnet" "public_a" {
   vpc_id                          = aws_vpc.gophermaps-vpc.id
-  cidr_block                      = "1.0.0.0/27"    # First half of the VPC CIDR block
+  cidr_block                      = "1.0.0.0/27" # First half of the VPC CIDR block
   ipv6_cidr_block                 = cidrsubnet(aws_vpc.gophermaps-vpc.ipv6_cidr_block, 8, 0)
   assign_ipv6_address_on_creation = true
-  map_public_ip_on_launch         = false   # Don't auto-assign public ipv4 addresses
+  map_public_ip_on_launch         = false # Don't auto-assign public ipv4 addresses
   availability_zone               = "us-east-2a"
 }
 
 resource "aws_subnet" "public_b" {
   vpc_id                          = aws_vpc.gophermaps-vpc.id
-  cidr_block                      = "1.0.0.32/27"   # Second half of the VPC CIDR block
+  cidr_block                      = "1.0.0.32/27" # Second half of the VPC CIDR block
   ipv6_cidr_block                 = cidrsubnet(aws_vpc.gophermaps-vpc.ipv6_cidr_block, 8, 1)
   assign_ipv6_address_on_creation = true
-  map_public_ip_on_launch         = false   # Don't auto-assign public ipv4 addresses
+  map_public_ip_on_launch         = false # Don't auto-assign public ipv4 addresses
   availability_zone               = "us-east-2b"
 }
 
@@ -82,8 +82,8 @@ resource "aws_security_group" "backend" {
   # Allow SSH from anywhere
   ingress {
     description      = "SSH from anywhere"
-    from_port        = 22
     to_port          = 22
+    from_port        = 22
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -92,8 +92,8 @@ resource "aws_security_group" "backend" {
   # Allow HTTP from within VPC only
   ingress {
     description      = "HTTP from VPC"
-    from_port        = 80
     to_port          = 80
+    from_port        = 80
     protocol         = "tcp"
     cidr_blocks      = [aws_vpc.gophermaps-vpc.cidr_block]
     ipv6_cidr_blocks = [aws_vpc.gophermaps-vpc.ipv6_cidr_block]
@@ -102,8 +102,8 @@ resource "aws_security_group" "backend" {
   # Allow outbound HTTPS for CodeDeploy agent
   egress {
     description      = "HTTPS for CodeDeploy"
-    from_port        = 443
     to_port          = 443
+    from_port        = 443
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -112,8 +112,8 @@ resource "aws_security_group" "backend" {
   # Allow outbound TCP on port 7687 (neo4j bolt)
   egress {
     description      = "Custom TCP 7687"
-    from_port        = 7687
     to_port          = 7687
+    from_port        = 7687
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -121,5 +121,36 @@ resource "aws_security_group" "backend" {
 
   tags = {
     Name = "GopherMaps-Backend-SG"
+  }
+}
+
+#* Create a security group for the ALB
+resource "aws_security_group" "loadbalancer" {
+  name        = "gophermaps-loadbalancer-sg"
+  description = "Security group for Load Balancer"
+  vpc_id      = aws_vpc.gophermaps-vpc.id
+
+  # Allow HTTPS traffic from anywhere
+  ingress {
+    description      = "All HTTPS traffic"
+    to_port          = 443
+    from_port        = 443
+    protocol         = "tcp"
+    cidr_blocks      = []
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  # Allow outbound traffic to VPC
+  egress {
+    description      = "HTTP traffic to VPC"
+    to_port          = 80
+    from_port        = 80
+    protocol         = "tcp"
+    cidr_blocks      = [aws_vpc.gophermaps-vpc.cidr_block]
+    ipv6_cidr_blocks = [aws_vpc.gophermaps-vpc.ipv6_cidr_block]
+  }
+
+  tags = {
+    Name = "GopherMaps-ALB-SG"
   }
 }
