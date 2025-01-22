@@ -92,7 +92,7 @@ areas = [
 app = FastAPI(
     title="GopherMaps API",
     summary="REST API for the GopherMaps Project",
-    version="1.0.1",
+    version="1.0.2",
     contact={
         "name": "Ryan Roche",
         "url": "https://socialcoding.net"
@@ -120,7 +120,7 @@ async def startup():
     try:
         driver.verify_connectivity()
         await post_info_webhook(
-            body="REST API Endpoint successfully started",
+            body=f"REST API Endpoint successfully started\n*Version {app.version}*",
             source=WebhookSource.FASTAPI
         )
     except Exception as e:
