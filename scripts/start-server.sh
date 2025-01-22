@@ -13,4 +13,4 @@ while read -r name value; do
 done
 
 # Start the service
-systemctl start fastapi
+systemctl start gophermaps.service

@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # Stop the service
-systemctl stop fastapi
+systemctl stop gophermaps.service
