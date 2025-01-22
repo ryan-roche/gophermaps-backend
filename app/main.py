@@ -9,11 +9,11 @@ from neo4j import GraphDatabase, graph
 from discord_webhook import AsyncDiscordWebhook, DiscordEmbed
 from scalar_fastapi import get_scalar_api_reference
 
-AURA_CONNECTION_URI = getenv("AURA_URI")
-AURA_USERNAME = getenv("AURA_USERNAME")
-AURA_PASSWORD = getenv("AURA_PASSWORD")
+AURA_CONNECTION_URI = getenv("uri")
+AURA_USERNAME = getenv("username")
+AURA_PASSWORD = getenv("password")
 
-DISCORD_WEBHOOK_URL = getenv("DISCORD_WEBHOOK_URL")
+DISCORD_WEBHOOK_URL = getenv("discord-webhook")
 
 driver = GraphDatabase.driver(
     AURA_CONNECTION_URI,
