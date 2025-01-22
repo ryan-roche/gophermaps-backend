@@ -12,3 +12,10 @@ provider "aws" {
   region = "us-east-2"
   profile = "SocialCoding"
 }
+
+# Provider for CloudFront certificate
+provider "aws" {
+  alias  = "us-east-1"
+  region = "us-east-1"
+  profile = "SocialCoding"
+}
