@@ -9,7 +9,8 @@ aws ssm get-parameters-by-path \
     --query 'Parameters[*].[Name,Value]' \
     --output text | \
 while IFS=$'\t' read -r name value; do
-    systemctl set-environment "$(basename "$name")=$value"
+    param_name=$(basename "$name" | tr '-' '_')
+    sudo systemctl set-environment "$param_name=$value"
 done
 
 # Start the service

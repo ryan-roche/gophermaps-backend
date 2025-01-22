@@ -13,7 +13,7 @@ AURA_CONNECTION_URI = getenv("uri")
 AURA_USERNAME = getenv("username")
 AURA_PASSWORD = getenv("password")
 
-DISCORD_WEBHOOK_URL = getenv("discord-webhook")
+DISCORD_WEBHOOK_URL = getenv("discord_webhook")
 
 driver = GraphDatabase.driver(
     AURA_CONNECTION_URI,
