@@ -73,37 +73,6 @@ resource "aws_route_table_association" "public_b" {
   route_table_id = aws_route_table.public.id
 }
 
-#* Create a security group for the load balancer
-resource "aws_security_group" "lb" {
-  name        = "gophermaps-lb-sg"
-  description = "Security group for the load balancer"
-  vpc_id      = aws_vpc.gophermaps-vpc.id
-
-  # Allow inbound HTTPS traffic from anywhere
-  ingress {
-    description      = "HTTPS from anywhere"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  # Allow all outbound traffic within the VPC
-  egress {
-    description      = "Outbound to VPC"
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1" # All protocols
-    cidr_blocks      = [aws_vpc.gophermaps-vpc.cidr_block]
-    ipv6_cidr_blocks = [aws_vpc.gophermaps-vpc.ipv6_cidr_block]
-  }
-
-  tags = {
-    Name = "GopherMaps-LB-SG"
-  }
-}
-
 #* Create a security group for the backend
 resource "aws_security_group" "backend" {
   name        = "gophermaps-backend-sg"
