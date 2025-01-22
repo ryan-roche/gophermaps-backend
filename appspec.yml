@@ -6,7 +6,7 @@ files:
   - source: /app
     destination: /var/gophermaps/app
   - source: /pyproject.toml
-    destination: /var/gophermaps/pyproject.toml
+    destination: /var/gophermaps
   
 hooks:
   ApplicationStop:
