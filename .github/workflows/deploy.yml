@@ -34,5 +34,5 @@ jobs:
             - name: Create CodeDeploy Deployment
               run: |
                 echo "Deploying commit ${{ github.sha }} to AWS"
-                aws deploy --application-name GopherMaps --deployment-group-name GopherMaps-DG --github-location repository=$GITHUB_REPOSITORY,commitid=${{ github.sha }} --ignore-application-stop-failures
+                aws deploy create-deployment --application-name GopherMaps --deployment-group-name GopherMaps-DG --github-location repository=$GITHUB_REPOSITORY,commitid=${{ github.sha }} --ignore-application-stop-failures
 
