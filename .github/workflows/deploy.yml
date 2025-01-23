@@ -33,5 +33,5 @@ jobs:
 
             - name: Create CodeDeploy Deployment
               run: |
-                echo "Deploying commit ${{ github.sha }} to ${{ github.event.inputs.environment }}"
-                
+                echo "Deploying commit ${{ github.sha }} to ${{ github.environment }}"
+
