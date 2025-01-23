@@ -1,0 +1,22 @@
+name: Deploy to AWS
+
+on:
+    workflow_dispatch: {}
+    push:
+        branches:
+            - 'prod'
+        paths-ignore:
+            - 'tf/**'
+            - '.gitignore'
+            - 'README.md'
+
+env:
+    AWS_REGION: us-east-2
+
+jobs:
+    deploy:
+        name: Perform CodeDeploy Deployment
+        runs-on: ubuntu-latest
+        steps:
+            - name: Display commit SHA
+              run: echo "Latest commit sha is ${{ github.sha }}"
