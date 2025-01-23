@@ -15,8 +15,9 @@ env:
 
 jobs:
     deploy:
-        name: Perform CodeDeploy Deployment
+        name: CodeDeploy Deployment
         runs-on: ubuntu-latest
+        environment: Production
         permissions:
             id-token: write
             contents: read
@@ -29,3 +30,8 @@ jobs:
               with:
                 role-to-assume: arn:aws:iam::445567081553:role/GitHubCodeDeployRole
                 aws-region: ${{ env.AWS_REGION }}
+
+            - name: Create CodeDeploy Deployment
+              run: |
+                echo "Deploying commit ${{ github.sha }} to ${{ github.event.inputs.environment }}"
+                
