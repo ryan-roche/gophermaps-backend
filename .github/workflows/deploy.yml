@@ -17,6 +17,15 @@ jobs:
     deploy:
         name: Perform CodeDeploy Deployment
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
         steps:
-            - name: Display commit SHA
+            - name: Confirm commit SHA
               run: echo "Latest commit sha is ${{ github.sha }}"
+
+            - name: Configure AWS credentials
+              uses: aws-actions
+              with:
+                role-to-assume: arn:aws:iam::445567081553:role/GitHubCodeDeployRole
+                aws-region: ${{ env.AWS_REGION }}
