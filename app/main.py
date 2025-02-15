@@ -94,7 +94,7 @@ areas = [
 app = FastAPI(
     title="GopherMaps API",
     summary="REST API for the GopherMaps Project",
-    version="1.0.2",
+    version="1.1",
     contact={
         "name": "Ryan Roche",
         "url": "https://socialcoding.net"
