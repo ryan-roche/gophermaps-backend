@@ -48,6 +48,8 @@ class BuildingEntryModel(BaseModel):
     buildingName: str = Field(..., description="The name of the building")
     thumbnail: str = Field(..., description="The filename of the building's thumbnail image")
     navID: str = Field(..., description="The navID of the building's BuildingKey node", alias="keyID")
+    applePlaceID: str = Field(..., description="The building's Apple Maps place ID")
+    googlePlaceID: str = Field(..., description="The building's Google Maps place ID")
 
     class Config:
         populate_by_name = True
@@ -92,7 +94,7 @@ areas = [
 app = FastAPI(
     title="GopherMaps API",
     summary="REST API for the GopherMaps Project",
-    version="1.0.2",
+    version="1.1",
     contact={
         "name": "Ryan Roche",
         "url": "https://socialcoding.net"
