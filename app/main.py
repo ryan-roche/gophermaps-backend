@@ -94,7 +94,7 @@ areas = [
 app = FastAPI(
     title="GopherMaps API",
     summary="REST API for the GopherMaps Project",
-    version="1.1",
+    version="1.2",
     contact={
         "name": "Ryan Roche",
         "url": "https://socialcoding.net"
@@ -289,6 +289,25 @@ async def get_buildings_by_area(
 
         return building_entries
 
+@app.get("/buildings/all", tags=["Buildings"], operation_id="getAllBuildings")
+async def get_all_buildings() -> list[BuildingEntryModel]:
+    """
+    Retrieves information for ALL Buildings
+    """
+    with driver.session() as session:
+        query = """
+        MATCH (n:BuildingKey) RETURN n
+        """
+        result = session.run(query)
+
+        results: List[Dict[str, Any]] = result.data()
+
+        # Use list comprehension to unwrap nodes and create BuildingEntryModel instances
+        building_entries: List[BuildingEntryModel] = [
+            BuildingEntryModel(**record['n']) for record in results
+        ]
+
+    return building_entries
 
 @app.get("/destinations/{building}", tags=["Routing"], operation_id="getDestinationsForBuilding")
 async def get_destinations_for_building(
